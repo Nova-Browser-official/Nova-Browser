@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:;" />
+  <title>Nova Browser</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Tab bar -->
+    <div id="tabbar" class="tabbar">
+      <div id="tabs" class="tabs">
+        <button id="new-tab-btn" class="new-tab-btn" title="新标签页 (⌘T)">+</button>
+      </div>
+    </div>
+
+    <!-- Toolbar + Webviews (main column) -->
+    <div id="main-col">
+    <!-- Toolbar -->
+    <div id="toolbar" class="toolbar">
+      <div class="nav-buttons">
+        <button id="back-btn" class="nav-btn" title="后退" disabled>
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M15.5 19l-7-7 7-7 1.4 1.4L11.3 12l5.6 5.6z"/></svg>
+        </button>
+        <button id="forward-btn" class="nav-btn" title="前进" disabled>
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M8.5 5l7 7-7 7-1.4-1.4L12.7 12 7.1 6.4z"/></svg>
+        </button>
+        <button id="reload-btn" class="nav-btn" title="重新加载">
+          <svg viewBox="0 0 24 24" width="17" height="17"><path fill="currentColor" d="M17.65 6.35A8 8 0 1 0 19.73 14h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg>
+        </button>
+        <button id="home-btn" class="nav-btn" title="主页">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 3l9 8h-3v9h-4v-6H10v6H6v-9H3z"/></svg>
+        </button>
+      </div>
+      <div class="url-wrap">
+        <span id="url-lock" class="url-lock secure" title="安全连接">
+          <svg id="lock-icon-secure" viewBox="0 0 24 24" width="13" height="13"><path fill="currentColor" d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm-3 8V6a3 3 0 0 1 6 0v3z"/></svg>
+          <svg id="lock-icon-insecure" viewBox="0 0 24 24" width="13" height="13" style="display:none"><path fill="currentColor" d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9zm3 11a2 2 0 1 1 2-2 2 2 0 0 1-2 2z"/></svg>
+        </span>
+        <input id="url-input" class="url-input" type="text" placeholder="搜索或输入网址" spellcheck="false" />
+        <button id="bookmark-star" class="bookmark-star" title="收藏此页面">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77 5.82 21l1.18-6.88L2 9.27l6.91-1.01L12 2z" opacity="0.3" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+        </button>
+        <div id="loading-bar" class="loading-bar"></div>
+      </div>
+      <div class="nav-buttons">
+        <button id="bookmarks-btn" class="nav-btn" title="收藏夹">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M6 3h12a2 2 0 0 1 2 2v16l-8-5-8 5V5a2 2 0 0 1 2-2z"/></svg>
+        </button>
+        <button id="extensions-btn" class="nav-btn" title="扩展程序">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M20.5 11H19V7a2 2 0 0 0-2-2h-4V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V5H6a2 2 0 0 0-2 2v3.5A1.5 1.5 0 0 0 2.5 12 1.5 1.5 0 0 0 4 13.5V17a2 2 0 0 0 2 2h3.5v1.5a1.5 1.5 0 0 0 1.5 1.5 1.5 1.5 0 0 0 1.5-1.5V19H17a2 2 0 0 0 2-2v-4h1.5a1.5 1.5 0 0 0 1.5-1.5A1.5 1.5 0 0 0 20.5 11z"/></svg>
+        </button>
+        <button id="translate-btn" class="nav-btn" title="翻译此页">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.88 7l1.88-5 1.88 5z"/></svg>
+        </button>
+        <button id="menu-btn" class="nav-btn" title="菜单">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 8a2 2 0 1 0-2-2 2 2 0 0 0 2 2zm0 2a2 2 0 1 0 2 2 2 2 0 0 0-2-2zm0 6a2 2 0 1 0 2 2 2 2 0 0 0-2-2z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Webview area + overlays -->
+    <div id="webviews" class="webviews">
+      <!-- New tab page -->
+      <div id="newtab-page" class="newtab-page">
+        <div class="newtab-inner">
+          <div class="logo">Nova</div>
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" width="18" height="18" class="search-icon"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 5 1.49-1.5zM10 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"/></svg>
+            <input id="newtab-search" class="newtab-search" type="text" placeholder="搜索或输入网址" spellcheck="false" />
+          </div>
+          <div id="shortcuts" class="shortcuts"></div>
+        </div>
+        <button id="newtab-bg-btn" class="newtab-bg-btn" title="更换背景图片">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5z"/></svg>
+        </button>
+        <input id="newtab-bg-file" type="file" accept="image/*" style="display:none" />
+      </div>
+
+      <!-- Settings page with sidebar -->
+      <div id="settings-page" class="settings-page hidden">
+        <div class="settings-layout">
+          <aside class="settings-sidebar">
+            <div class="settings-side-logo">⚙ Nova 设置</div>
+            <nav class="settings-nav">
+              <div class="settings-nav-item active" data-section="appearance">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77 5.82 21l1.18-6.88L2 9.27l6.91-1.01L12 2z"/></svg>
+                <span>外观</span>
+              </div>
+              <div class="settings-nav-item" data-section="search">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 5 1.49-1.5zM10 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"/></svg>
+                <span>搜索引擎</span>
+              </div>
+              <div class="settings-nav-item" data-section="translate">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.88 7l1.88-5 1.88 5z"/></svg>
+                <span>翻译</span>
+              </div>
+              <div class="settings-nav-item" data-section="startup">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 7 7v2a9 9 0 0 0 0-18z"/></svg>
+                <span>启动与主页</span>
+              </div>
+              <div class="settings-nav-item" data-section="downloads">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                <span>下载</span>
+              </div>
+              <div class="settings-nav-item" data-section="privacy">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm-3 8V6a3 3 0 0 1 6 0v3z"/></svg>
+                <span>隐私与安全</span>
+              </div>
+              <div class="settings-nav-item" data-section="extensions">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M20.5 11H19V7a2 2 0 0 0-2-2h-4V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V5H6a2 2 0 0 0-2 2v4H2.5A1.5 1.5 0 0 0 1 16.5 1.5 1.5 0 0 0 2.5 18H4v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4h1.5a1.5 1.5 0 0 0 1.5-1.5 1.5 1.5 0 0 0-1.5-1.5zM10.5 10h3v3h-3z"/></svg>
+                <span>扩展程序</span>
+              </div>
+              <div class="settings-nav-item" data-section="bookmarks">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M6 3h12a2 2 0 0 1 2 2v16l-8-5-8 5V5a2 2 0 0 1 2-2z"/></svg>
+                <span>收藏夹</span>
+              </div>
+              <div class="settings-nav-item" data-section="about">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>
+                <span>关于 Nova</span>
+              </div>
+            </nav>
+          </aside>
+
+          <main class="settings-main">
+            <div class="settings-header">
+              <h1 id="settings-section-title">外观</h1>
+              <div class="settings-subtitle" id="settings-section-desc">自定义 Nova Browser 的外观与主题</div>
+            </div>
+
+            <!-- Appearance -->
+            <section class="settings-section" data-panel="appearance">
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">主题</div>
+                  <div class="settings-row-desc">选择浅色或深色界面风格</div>
+                </div>
+                <div class="settings-theme-group" id="theme-group">
+                  <button class="theme-btn active" data-theme="dark">深色</button>
+                  <button class="theme-btn" data-theme="light">浅色</button>
+                  <button class="theme-btn" data-theme="system">跟随系统</button>
+                </div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">标签页位置</div>
+                  <div class="settings-row-desc">切换标签栏的显示位置（顶部横向 / 左侧纵向）</div>
+                </div>
+                <div class="settings-theme-group" id="tabs-position-group">
+                  <button class="theme-btn active" data-tabs-position="top">顶部</button>
+                  <button class="theme-btn" data-tabs-position="left">左侧</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Search -->
+            <section class="settings-section hidden" data-panel="search">
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">默认搜索引擎</div>
+                  <div class="settings-row-desc">在地址栏输入搜索词时使用的引擎</div>
+                </div>
+                <select id="setting-search-engine" class="settings-select">
+                  <option value="https://www.google.com/search?q=">Google</option>
+                  <option value="https://cn.bing.com/search?q=">必应 Bing</option>
+                  <option value="https://www.baidu.com/s?wd=">百度</option>
+                  <option value="https://duckduckgo.com/?q=">DuckDuckGo</option>
+                </select>
+              </div>
+              <div class="settings-row" style="flex-direction:column;align-items:stretch;">
+                <div class="settings-row-info" style="margin-bottom:12px;">
+                  <div class="settings-row-label">添加自定义搜索引擎</div>
+                  <div class="settings-row-desc">输入名称和搜索 URL 模板（用 %s 代替关键词，例如 https://yandex.com/search/?text=%s）</div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                  <input id="ce-name" class="settings-input" type="text" placeholder="引擎名称" style="width:140px;" />
+                  <input id="ce-url" class="settings-input" type="text" placeholder="https://example.com/search?q=%s" style="flex:1;min-width:220px;" />
+                  <button id="setting-add-engine" class="settings-btn plain">添加</button>
+                </div>
+              </div>
+              <div id="custom-engine-list" class="ext-list"></div>
+            </section>
+
+            <!-- Translate -->
+            <section class="settings-section hidden" data-panel="translate">
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">翻译提供商</div>
+                  <div class="settings-row-desc">在网页上使用翻译功能时的服务商</div>
+                </div>
+                <select id="setting-translate-provider" class="settings-select">
+                  <option value="baidu">百度翻译</option>
+                  <option value="youdao">有道翻译</option>
+                </select>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">翻译目标语言</div>
+                  <div class="settings-row-desc">将外文网页翻译成哪种语言</div>
+                </div>
+                <select id="setting-translate-lang" class="settings-select">
+                  <option value="zh">中文</option>
+                  <option value="en">英文</option>
+                  <option value="ja">日文</option>
+                  <option value="ko">韩文</option>
+                </select>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">使用说明</div>
+                  <div class="settings-row-desc">在任意网页点击地址栏旁的翻译按钮，即可将当前页面翻译为目标语言。</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Startup & Homepage -->
+            <section class="settings-section hidden" data-panel="startup">
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">启动时打开</div>
+                  <div class="settings-row-desc">每次打开 Nova Browser 时显示的页面</div>
+                </div>
+                <select id="setting-startup" class="settings-select">
+                  <option value="newtab">新标签页</option>
+                  <option value="homepage">主页</option>
+                  <option value="continue">上次打开的页面</option>
+                </select>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">主页地址</div>
+                  <div class="settings-row-desc">点击工具栏主页按钮时打开的网址；留空为新标签页</div>
+                </div>
+                <input id="setting-homepage" class="settings-input" type="text" placeholder="例如 https://www.example.com" />
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">起始页 URL</div>
+                  <div class="settings-row-desc">自定义新标签页打开时自动加载的网址；留空则使用 Nova 默认起始页</div>
+                </div>
+                <input id="setting-newtab-url" class="settings-input" type="text" placeholder="例如 https://www.bing.com" />
+              </div>
+            </section>
+
+            <!-- Downloads -->
+            <section class="settings-section hidden" data-panel="downloads">
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">下载位置</div>
+                  <div class="settings-row-desc">自动保存文件时的默认目录（留空则使用系统下载文件夹）</div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <input id="setting-download-path" class="settings-input" type="text" placeholder="~/Downloads" style="width:200px;" readonly />
+                  <button id="setting-download-choose" class="settings-btn plain">选择…</button>
+                </div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">自动保存下载</div>
+                  <div class="settings-row-desc">开启后跳过保存对话框，直接下载到指定目录</div>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" id="setting-auto-save" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">显示下载通知</div>
+                  <div class="settings-row-desc">下载时在右下角显示进度提示</div>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" id="setting-dl-notify" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </section>
+
+            <!-- Privacy -->
+            <section class="settings-section hidden" data-panel="privacy">
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">清除浏览数据</div>
+                  <div class="settings-row-desc">清除缓存、Cookie、历史记录和本地存储</div>
+                </div>
+                <button id="setting-clear-data" class="settings-btn danger">立即清除</button>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">拼写检查</div>
+                  <div class="settings-row-desc">在输入框中自动检查拼写错误</div>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" id="setting-spellcheck" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </section>
+
+            <!-- Extensions -->
+            <section class="settings-section hidden" data-panel="extensions">
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">扩展安装</div>
+                  <div class="settings-row-desc">访问 Chrome 或 Edge 扩展商店下载扩展，或拖拽 .crx 文件到本窗口安装</div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button id="setting-open-cws" class="settings-btn plain">Chrome 应用商店</button>
+                  <button id="setting-open-edge" class="settings-btn plain">Edge 扩展商店</button>
+                  <button id="setting-install-crx" class="settings-btn plain">选择 .crx 安装</button>
+                </div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">已安装扩展</div>
+                  <div class="settings-row-desc">点击右侧可启用、禁用或移除扩展</div>
+                </div>
+              </div>
+              <div id="ext-list" class="ext-list"></div>
+              <div class="settings-hint" id="ext-hint">提示：将下载好的 .crx 扩展文件拖到 Nova Browser 任意位置即可开始安装。</div>
+            </section>
+
+            <!-- Bookmarks management -->
+            <section class="settings-section hidden" data-panel="bookmarks">
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">全部收藏 <span id="bookmark-count" class="count-badge">0</span></div>
+                  <div class="settings-row-desc">管理所有已收藏的网页，可跳转、重命名或删除</div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button id="setting-import-bookmarks" class="settings-btn plain">从 HTML 导入</button>
+                  <button id="setting-clear-bookmarks" class="settings-btn danger">清空收藏</button>
+                </div>
+              </div>
+              <div id="bookmark-list" class="bookmark-list"></div>
+            </section>
+
+            <!-- About -->
+            <section class="settings-section hidden" data-panel="about">
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">Nova Browser</div>
+                  <div class="settings-row-desc">基于 Chromium 内核的现代网页浏览器</div>
+                </div>
+                <div class="settings-version" id="setting-version">v1.0.7</div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-label">Chromium 版本</div>
+                  <div class="settings-row-desc">渲染与 JavaScript 引擎</div>
+                </div>
+                <div class="settings-version-dim" id="setting-chrome">-</div>
+              </div>
+            </section>
+
+            <div class="settings-footer">
+              <button id="setting-cancel" class="settings-btn plain">关闭</button>
+              <button id="setting-save" class="settings-btn primary">保存</button>
+            </div>
+          </main>
+        </div>
+      </div>
+
+      <!-- Bookmarks panel (slides in from the right) -->
+      <div id="bookmarks-panel" class="bookmarks-panel hidden">
+        <div class="bookmarks-header">
+          <div class="bookmarks-title">收藏夹</div>
+          <button id="bookmarks-close" class="nav-btn" title="关闭">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 6.4L17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg>
+          </button>
+        </div>
+        <div id="bookmarks-panel-list" class="bookmarks-panel-list"></div>
+      </div>
+
+      <!-- Add shortcut modal -->
+      <div id="shortcut-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-box">
+          <h3 id="shortcut-modal-title">添加快捷方式</h3>
+          <label class="modal-label">名称</label>
+          <input id="sm-name" class="modal-input" type="text" placeholder="例如 My Blog" />
+          <label class="modal-label">网址</label>
+          <input id="sm-url" class="modal-input" type="text" placeholder="https://example.com" />
+          <label class="modal-label">颜色 (可选)</label>
+          <div class="color-row" id="sm-colors"></div>
+          <div class="modal-footer">
+            <button id="sm-cancel" class="settings-btn plain">取消</button>
+            <button id="sm-save" class="settings-btn primary">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div><!-- end main-col -->
+  </div>
+  <div id="app-menu" class="app-menu hidden">
+    <div class="app-menu-item" data-action="newtab">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"/></svg>
+      <span>新标签页</span><span class="shortcut-key">⌘T</span>
+    </div>
+    <div class="app-menu-item" data-action="newwin">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 8H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm0 12H5V10h14z M8 6h11a2 2 0 0 1 2 2v2H14a2 2 0 0 1-2-2V4H6a2 2 0 0 0-2 2v8H2V8a2 2 0 0 1 2-2h4z"/></svg>
+      <span>新窗口</span><span class="shortcut-key">⌘N</span>
+    </div>
+    <div class="app-menu-item" data-action="bookmarks">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M6 3h12a2 2 0 0 1 2 2v16l-8-5-8 5V5a2 2 0 0 1 2-2z"/></svg>
+      <span>收藏夹</span>
+    </div>
+    <div class="app-menu-sep"></div>
+    <div class="app-menu-item" data-action="incognito">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+      <span>新建无痕窗口</span><span class="shortcut-key">⇧⌘N</span>
+    </div>
+    <div class="app-menu-sep"></div>
+    <div class="app-menu-item" data-action="home">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 3l9 8h-3v9h-4v-6H10v6H6v-9H3z"/></svg>
+      <span>返回首页</span>
+    </div>
+    <div class="app-menu-item" data-action="cleardata">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V7H6zm8-10V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H5v14h14V9z"/></svg>
+      <span>清除浏览数据</span>
+    </div>
+    <div class="app-menu-sep"></div>
+    <div class="app-menu-item" data-action="devtools">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M20 3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-9 14H7v-2h4zm0-4H7v-2h4zm0-4H7V7h4zm6 8h-4v-2h4zm0-4h-4v-2h4zm0-4h-4V7h4z"/></svg>
+      <span>开发者工具</span><span class="shortcut-key">⌘⌥I</span>
+    </div>
+    <div class="app-menu-item" data-action="fullscreen">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M7 14H5v5h5v-2H7zm-2-4h2V7h3V5H5zm12 7h-3v2h5v-5h-2zM14 5v2h3v3h2V5z"/></svg>
+      <span>全屏</span><span class="shortcut-key">⌃⌘F</span>
+    </div>
+    <div class="app-menu-sep"></div>
+    <div class="app-menu-item" data-action="settings">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19.43 12.98a7.94 7.94 0 0 0 0-1.96l2.11-1.65a.5.5 0 0 0 .11-.63l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.97 7.97 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.42l-.38 2.65a7.97 7.97 0 0 0-1.7.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .11.63l2.11 1.65a7.94 7.94 0 0 0 0 1.96L2.46 14.63a.5.5 0 0 0-.11.63l2 3.46a.5.5 0 0 0 .6.22l2.49-1a7.97 7.97 0 0 0 1.7.98l.38 2.65A.5.5 0 0 0 10 22h4a.5.5 0 0 0 .5-.42l.38-2.65a7.97 7.97 0 0 0 1.7-.98l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.11-.63zM12 15.5a3.5 3.5 0 1 1 3.5-3.5A3.5 3.5 0 0 1 12 15.5z"/></svg>
+      <span>设置</span><span class="shortcut-key">⌘,</span>
+    </div>
+    <div class="app-menu-item" data-action="about">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>
+      <span>关于 Nova Browser</span>
+    </div>
+  </div>
+
+  <!-- Context menu (tab context) -->
+  <div id="ctx-menu" class="ctx-menu hidden">
+    <div class="ctx-item" data-action="back">后退</div>
+    <div class="ctx-item" data-action="forward">前进</div>
+    <div class="ctx-item" data-action="reload">重新加载</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" data-action="bookmark">收藏此页</div>
+    <div class="ctx-item" data-action="newtab">新标签页</div>
+    <div class="ctx-item" data-action="duplicate">复制标签页</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" data-action="close">关闭标签页</div>
+  </div>
+
+  <!-- Clear data modal -->
+  <div id="clear-data-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box" style="max-width:420px;">
+      <h3>清除浏览数据</h3>
+      <p style="color:var(--text-dim);font-size:14px;margin-bottom:16px;">选择要清除的数据类型，此操作不可撤销。</p>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+        <label class="settings-checkbox-row"><input type="checkbox" id="cd-cache" checked /> <span>缓存图片与文件</span></label>
+        <label class="settings-checkbox-row"><input type="checkbox" id="cd-cookies" /> <span>Cookie 与网站数据</span></label>
+        <label class="settings-checkbox-row"><input type="checkbox" id="cd-history" /> <span>浏览历史记录</span></label>
+        <label class="settings-checkbox-row"><input type="checkbox" id="cd-localstorage" /> <span>本地存储 (localStorage)</span></label>
+        <label class="settings-checkbox-row"><input type="checkbox" id="cd-downloads" /> <span>下载记录</span></label>
+      </div>
+      <div class="modal-footer">
+        <button id="clear-data-cancel" class="settings-btn plain">取消</button>
+        <button id="clear-data-confirm" class="settings-btn danger">清除选中数据</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Download toast -->
+  <div id="download-toast" class="download-toast hidden"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
